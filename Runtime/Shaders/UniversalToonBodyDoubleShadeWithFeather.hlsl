@@ -75,7 +75,13 @@
                     surfaceData.smoothness,
                     surfaceData.alpha, brdfData);
 
-                half3 envColor = GlobalIlluminationUTS(brdfData, inputData.bakedGI, surfaceData.occlusion, inputData.normalWS, inputData.viewDirectionWS);
+                // 環境光の計算（不要ならコメントアウト処理のみでOK）
+                half3 envLightSource_SkyboxIntensity = max(ShadeSH9(half4(0.0,0.0,0.0,1.0)), ShadeSH9(half4(0.0,-1.0,0.0,1.0))).rgb;
+                half3 envLightSource_GradientEquator = unity_AmbientEquator.rgb > 0.05 ? unity_AmbientEquator.rgb : half3(0.05, 0.05, 0.05);
+                half3 bakedGI_Direct = envLightSource_SkyboxIntensity.rgb > 0.0 ? envLightSource_SkyboxIntensity : envLightSource_GradientEquator;
+                half3 envColor = GlobalIlluminationUTS(brdfData, bakedGI_Direct, surfaceData.occlusion, inputData.normalWS, inputData.viewDirectionWS);
+                //half3 envColor = GlobalIlluminationUTS(brdfData, inputData.bakedGI, surfaceData.occlusion, inputData.normalWS, inputData.viewDirectionWS);
+
                 envColor *= 1.8f;
 
                 UtsLight mainLight = GetMainUtsLightByID(i.mainLightID, i.posWorld.xyz, inputData.shadowCoord, i.positionCS);
