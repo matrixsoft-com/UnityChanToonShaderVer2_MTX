@@ -64,7 +64,7 @@
                 o.pos = UnityObjectToClipPos(float4(v.vertex.xyz + signVar*normalize(v.vertex)*Set_Outline_Width, 1));
 #endif
                 //v.2.0.7.5
-                o.pos.z = o.pos.z + _Offset_Z * _ClipCameraPos.z;
+                o.pos.z = o.pos.z + _Offset_Z * _ClipCameraPos.z * v.color.b;
                 return o;
             }
             float4 frag(VertexOutput i) : SV_Target{
