@@ -10,6 +10,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
         protected const float kVersionZ = 1.0f;
 
         const string ShaderDefineSHADINGGRADEMAP = "_SHADINGGRADEMAP";
+        const string ShaderDefineYAXISFACE = "_YAXISFACE";
         const string ShaderDefineANGELRING_ON = "_IS_ANGELRING_ON";
         const string ShaderDefineANGELRING_OFF = "_IS_ANGELRING_OFF";
         const string ShaderDefineUTS_USE_RAYTRACING_SHADOW = "UTS_USE_RAYTRACING_SHADOW";
@@ -108,7 +109,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
 
         public enum _UTS_Technique
         {
-            DoubleShadeWithFeather, ShadingGradeMap
+            DoubleShadeWithFeather, ShadingGradeMap, YAxisFace
         }
 
         public enum _UTS_ClippingMode
@@ -323,7 +324,9 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
                 case _UTS_Technique.ShadingGradeMap:
                     bRet = (_UTS_TransClippingMode)material.GetInt(ShaderPropClippingMode) != _UTS_TransClippingMode.Off;
                     break;
-
+                case _UTS_Technique.YAxisFace:
+                    bRet = (_UTS_TransClippingMode)material.GetInt(ShaderPropClippingMode) != _UTS_TransClippingMode.Off;
+                    break;
 
             }
 
@@ -355,7 +358,8 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
             {
 
                 Material material = m_MaterialEditor.target as Material;
-                return material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.ShadingGradeMap;
+                return material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.ShadingGradeMap ||
+                       material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.YAxisFace;
 
             }
         }
@@ -621,9 +625,15 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
             {
                 case _UTS_Technique.DoubleShadeWithFeather:
                     material.DisableKeyword(ShaderDefineSHADINGGRADEMAP);
+                    material.DisableKeyword(ShaderDefineYAXISFACE);
                     break;
                 case _UTS_Technique.ShadingGradeMap:
                     material.EnableKeyword(ShaderDefineSHADINGGRADEMAP);
+                    material.DisableKeyword(ShaderDefineYAXISFACE);
+                    break;
+                case _UTS_Technique.YAxisFace:
+                    material.DisableKeyword(ShaderDefineSHADINGGRADEMAP);
+                    material.EnableKeyword(ShaderDefineYAXISFACE);
                     break;
             }
             EditorGUILayout.Space();
@@ -651,6 +661,10 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
                         DoPopup(clippingmodeModeText0, clippingMode, System.Enum.GetNames(typeof(_UTS_ClippingMode)));
                         break;
                     case _UTS_Technique.ShadingGradeMap:
+                        GUILayout.Label("TransClipping Shader", EditorStyles.boldLabel);
+                        DoPopup(clippingmodeModeText1, clippingMode, System.Enum.GetNames(typeof(_UTS_TransClippingMode)));
+                        break;
+                    case _UTS_Technique.YAxisFace:
                         GUILayout.Label("TransClipping Shader", EditorStyles.boldLabel);
                         DoPopup(clippingmodeModeText1, clippingMode, System.Enum.GetNames(typeof(_UTS_TransClippingMode)));
                         break;
@@ -831,7 +845,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
 
         void CheckUtsTechnique(Material material)
         {
-            if (material.HasProperty(ShaderPropUtsTechniqe))//DoubleWithFeather==0 or ShadingGradeMap==1
+            if (material.HasProperty(ShaderPropUtsTechniqe))//DoubleWithFeather==0 or ShadingGradeMap==1 or YAxisFace==2
             {
                 if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.DoubleShadeWithFeather)   //DWF
                 {
@@ -847,6 +861,15 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
                     if (!material.HasProperty("_ShadingGradeMap"))
                     {
                         //DWFに変更.
+                        material.SetInt(ShaderPropUtsTechniqe, (int)_UTS_Technique.DoubleShadeWithFeather);
+                    }
+                }
+                else if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.YAxisFace)
+                {
+                    // YAxisFace uses _ShadingGradeMap like ShadingGradeMap technique
+                    if (!material.HasProperty("_ShadingGradeMap"))
+                    {
+                        // Fallback to DoubleShadeWithFeather since YAxisFace requires ShadingGradeMap
                         material.SetInt(ShaderPropUtsTechniqe, (int)_UTS_Technique.DoubleShadeWithFeather);
                     }
                 }
@@ -983,7 +1006,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
                 }
                 else
                 {
-                    // ShadingGradeMap
+                    // ShadingGradeMap or YAxisFace
                     material.SetInt(ShaderPropClippingMode, (int)_UTS_TransClippingMode.On);
                 }
                 material.SetInt(_ZWriteMode, 0);
@@ -1375,7 +1398,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
 
         void GUI_ShadowControlMaps(Material material)
         {
-            if (material.HasProperty(ShaderPropUtsTechniqe))//DoubleWithFeather or ShadingGradeMap
+            if (material.HasProperty(ShaderPropUtsTechniqe))//DoubleWithFeather or ShadingGradeMap or YAxisFace
             {
                 if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.DoubleShadeWithFeather)   //DWF
                 {
@@ -1386,6 +1409,13 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
                 else if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.ShadingGradeMap)
                 {    //SGM
                     GUILayout.Label("Technipue : Shading Grade Map", EditorStyles.boldLabel);
+                    m_MaterialEditor.TexturePropertySingleLine(Styles.shadingGradeMapText, shadingGradeMap);
+                    m_MaterialEditor.RangeProperty(tweak_ShadingGradeMapLevel, "ShadingGradeMap Level");
+                    m_MaterialEditor.RangeProperty(blurLevelSGM, "Blur Level of ShadingGradeMap");
+                }
+                else if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.YAxisFace)
+                {    //YAxisFace - ShadingGradeMapと同じ機能
+                    GUILayout.Label("Technipue : YAxisFace", EditorStyles.boldLabel);
                     m_MaterialEditor.TexturePropertySingleLine(Styles.shadingGradeMapText, shadingGradeMap);
                     m_MaterialEditor.RangeProperty(tweak_ShadingGradeMapLevel, "ShadingGradeMap Level");
                     m_MaterialEditor.RangeProperty(blurLevelSGM, "Blur Level of ShadingGradeMap");
@@ -1453,7 +1483,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
 
         void GUI_BasicLookdevs(Material material)
         {
-            if (material.HasProperty(ShaderPropUtsTechniqe))//DoubleWithFeather or ShadingGradeMap
+            if (material.HasProperty(ShaderPropUtsTechniqe))//DoubleWithFeather or ShadingGradeMap or YAxisFace
             {
                 if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.DoubleShadeWithFeather)   //DWF
                 {
@@ -1471,6 +1501,19 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
                 else if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.ShadingGradeMap)
                 {    //SGM
                     GUILayout.Label("Technipue : Shading Grade Map", EditorStyles.boldLabel);
+                    m_MaterialEditor.RangeProperty(first_ShadeColor_Step, "1st ShaderColor Step");
+                    m_MaterialEditor.RangeProperty(first_ShadeColor_Feather, "1st ShadeColor Feather");
+                    m_MaterialEditor.RangeProperty(second_ShadeColor_Step, "2nd ShadeColor Step");
+                    m_MaterialEditor.RangeProperty(second_ShadeColor_Feather, "2nd ShadeColor Feather");
+                    //DoubleWithFeather系と変数を共有.
+                    material.SetFloat(ShaderPropBaseColor_Step, material.GetFloat(ShaderProp1st_ShadeColor_Step));
+                    material.SetFloat(ShaderPropBaseShade_Feather, material.GetFloat(ShaderProp1st_ShadeColor_Feather));
+                    material.SetFloat(ShaderPropShadeColor_Step, material.GetFloat(ShaderProp2nd_ShadeColor_Step));
+                    material.SetFloat(ShaderProp1st2nd_Shades_Feather, material.GetFloat(ShaderProp2nd_ShadeColor_Feather));
+                }
+                else if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.YAxisFace)
+                {    //YAxisFace - ShadingGradeMapと同じ機能を持つ
+                    GUILayout.Label("Technipue : YAxisFace", EditorStyles.boldLabel);
                     m_MaterialEditor.RangeProperty(first_ShadeColor_Step, "1st ShaderColor Step");
                     m_MaterialEditor.RangeProperty(first_ShadeColor_Feather, "1st ShadeColor Feather");
                     m_MaterialEditor.RangeProperty(second_ShadeColor_Step, "2nd ShadeColor Step");
@@ -2457,6 +2500,10 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
 
             m_MaterialEditor.TexturePropertySingleLine(Styles.outlineSamplerText, outline_Sampler);
             m_MaterialEditor.FloatProperty(offset_Z, "Offset Outline with Camera Z-axis");
+            if (outline_DistancePower != null)
+            {
+                m_MaterialEditor.FloatProperty(outline_DistancePower, "Outline Distance Power");
+            }
 
             if (!_SimpleUI)
             {
