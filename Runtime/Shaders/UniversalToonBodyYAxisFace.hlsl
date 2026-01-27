@@ -4,7 +4,7 @@
 
 
 
-        float4 fragShadingGradeMap(VertexOutput i, fixed facing : VFACE) : SV_TARGET
+        float4 fragYAxisFace(VertexOutput i, fixed facing : VFACE) : SV_TARGET
         {
 
                 i.normalDir = normalize(i.normalDir);
@@ -134,10 +134,17 @@
                 //v.2.0.5
                 float4 _1st_ShadeMap_var = lerp(SAMPLE_TEXTURE2D(_1st_ShadeMap,sampler_MainTex, TRANSFORM_TEX(Set_UV0, _1st_ShadeMap)),_MainTex_var,_Use_BaseAs1st);
                 float3 _Is_LightColor_1st_Shade_var = lerp( (_1st_ShadeMap_var.rgb*_1st_ShadeColor.rgb), ((_1st_ShadeMap_var.rgb*_1st_ShadeColor.rgb)*Set_LightColor), _Is_LightColor_1st_Shade );
-                float _HalfLambert_var = 0.5*dot(lerp( i.normalDir, normalDirection, _Is_NormalMapToBase ),lightDirection)+0.5; // Half Lambert
+                float3 objectUpOS = float3(0.0, 1.0, 0.0);                    // Object空間でのUp
+                float3 normalOS = normalLocal;                                // Object空間での法線（法線マップ適用前）
+                float3 lightDirectionOS = mul((float3x3)unity_WorldToObject, lightDirection);  // Object空間でのライト方向
+                float isLeftLight = step(0.0, lightDirectionOS.y);  // 左（負X）なら1、右（正X）なら0
+                
+                float2 ShadingMapUV = float2(isLeftLight * (1.0 - Set_UV0.x) + (1.0 - isLeftLight) * Set_UV0.x, Set_UV0.y);
+
+                float _HalfLambert_var = 0.5 * dot(lerp( i.normalDir, normalDirection, _Is_NormalMapToBase ),lightDirection) + 0.5; // Half Lambert
 
                 //v.2.0.6
-                float4 _ShadingGradeMap_var = tex2Dlod(_ShadingGradeMap, float4(TRANSFORM_TEX(Set_UV0, _ShadingGradeMap), 0.0, _BlurLevelSGM));
+                float4 _ShadingGradeMap_var = tex2Dlod(_ShadingGradeMap, float4(TRANSFORM_TEX(ShadingMapUV, _ShadingGradeMap), 0.0, _BlurLevelSGM));
 
                 //the value of shadowAttenuation is darker than legacy and it cuases noise in terminaters.
 #if !defined (UTS_USE_RAYTRACING_SHADOW)
@@ -185,6 +192,7 @@
                 float3 _LightDirection_MaskOn_var = lerp( (_Is_LightColor_RimLight_var*_Rimlight_InsideMask_var), (_Is_LightColor_RimLight_var*saturate((_Rimlight_InsideMask_var-((1.0 - _VertHalfLambert_var)+_Tweak_LightDirection_MaskLevel)))), _LightDirection_MaskOn );
                 float _ApRimLightPower_var = pow(_RimArea_var,exp2(lerp(3,0,_Ap_RimLight_Power)));
                 float3 Set_RimLight = (SATURATE_IF_SDR((_Set_RimLightMask_var.g+_Tweak_RimLightMaskLevel))*lerp( _LightDirection_MaskOn_var, (_LightDirection_MaskOn_var+(lerp( _Ap_RimLightColor.rgb, (_Ap_RimLightColor.rgb*Set_LightColor), _Is_LightColor_Ap_RimLight )*saturate((lerp( (0.0 + ( (_ApRimLightPower_var - _RimLight_InsideMask) * (1.0 - 0.0) ) / (1.0 - _RimLight_InsideMask)), step(_RimLight_InsideMask,_ApRimLightPower_var), _Ap_RimLight_FeatherOff )-(saturate(_VertHalfLambert_var)+_Tweak_LightDirection_MaskLevel))))), _Add_Antipodean_RimLight ));
+                Set_RimLight *= i.color.g;
                 //Composition: HighColor and RimLight as _RimLight_var
                 float3 _RimLight_var = lerp( Set_HighColor, (Set_HighColor+Set_RimLight), _RimLight );
                 //Matcap
@@ -365,7 +373,14 @@
                         //v.2.0.5
                         float4 _2nd_ShadeMap_var = lerp(SAMPLE_TEXTURE2D(_2nd_ShadeMap, sampler_MainTex,TRANSFORM_TEX(Set_UV0, _2nd_ShadeMap)), _1st_ShadeMap_var, _Use_1stAs2nd);
                         float3 Set_2nd_ShadeColor = lerp((_2nd_ShadeColor.rgb*_2nd_ShadeMap_var.rgb*_LightIntensity), ((_2nd_ShadeColor.rgb*_2nd_ShadeMap_var.rgb)*Set_LightColor), _Is_LightColor_2nd_Shade);
-                        float _HalfLambert_var = 0.5*dot(lerp(i.normalDir, normalDirection, _Is_NormalMapToBase), lightDirection) + 0.5;
+
+                        float3 objectUpOS = float3(0.0, 1.0, 0.0);                    // Object空間でのUp
+                        float3 normalOS = normalLocal;                                // Object空間での法線（法線マップ適用前）
+                        float3 lightDirectionOS = mul((float3x3)unity_WorldToObject, lightDirection);  // Object空間でのライト方向
+                        float isLeftLight = step(0.0, lightDirectionOS.y);  // 左（負X）なら1、右（正X）なら0
+                        float2 ShadingMapUV = float2(isLeftLight * (1.0 - Set_UV0.x) + (1.0 - isLeftLight) * Set_UV0.x, Set_UV0.y);
+                        float _HalfLambert_var = 0.5 * dot(lerp( i.normalDir, normalDirection, _Is_NormalMapToBase ),lightDirection) + 0.5; // Half Lambert
+
 
                         // float4 _Set_2nd_ShadePosition_var = tex2D(_Set_2nd_ShadePosition, TRANSFORM_TEX(Set_UV0, _Set_2nd_ShadePosition));
                         // float4 _Set_1st_ShadePosition_var = tex2D(_Set_1st_ShadePosition, TRANSFORM_TEX(Set_UV0, _Set_1st_ShadePosition));
@@ -374,7 +389,7 @@
     //SGM
 
                     //v.2.0.6
-                        float4 _ShadingGradeMap_var = tex2Dlod(_ShadingGradeMap, float4(TRANSFORM_TEX(Set_UV0, _ShadingGradeMap), 0.0, _BlurLevelSGM));
+                        float4 _ShadingGradeMap_var = tex2Dlod(_ShadingGradeMap, float4(TRANSFORM_TEX(ShadingMapUV, _ShadingGradeMap), 0.0, _BlurLevelSGM));
                         //v.2.0.6
                         //Minmimum value is same as the Minimum Feather's value with the Minimum Step's value as threshold.
                         //float _SystemShadowsLevel_var = (attenuation*0.5)+0.5+_Tweak_SystemShadowsLevel > 0.001 ? (attenuation*0.5)+0.5+_Tweak_SystemShadowsLevel : 0.0001;
