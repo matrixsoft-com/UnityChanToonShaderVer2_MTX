@@ -197,6 +197,7 @@ Shader "Universal Render Pipeline/Toon" {
         _OutlineTex ("OutlineTex", 2D) = "white" {}
         //Offset parameter
         _Offset_Z ("Offset_Camera_Z", Float) = 0
+        _Outline_DistancePower ("Outline Distance Power", Range(0.5, 1.5)) = 1.2
         //v.2.0.4.3 Baked Nrmal Texture for Outline
         [Toggle(_)] _Is_BakedNormal ("Is_BakedNormal", Float ) = 0
         _BakedNormal ("Baked Normal for Outline", 2D) = "white" {}

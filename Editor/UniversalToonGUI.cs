@@ -288,6 +288,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
         MaterialProperty outline_Width = null;
         MaterialProperty outline_Color = null;
         MaterialProperty outline_Sampler = null;
+        MaterialProperty outline_DistancePower = null;
         MaterialProperty offset_Z = null;
         MaterialProperty farthest_Distance = null;
         MaterialProperty nearest_Distance = null;
@@ -447,6 +448,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
             outline_Width = FindProperty("_Outline_Width", props, false);
             outline_Color = FindProperty("_Outline_Color", props, false);
             outline_Sampler = FindProperty("_Outline_Sampler", props, false);
+            outline_DistancePower = FindProperty("_Outline_DistancePower", props, false);
             offset_Z = FindProperty("_Offset_Z", props, false);
             farthest_Distance = FindProperty("_Farthest_Distance", props, false);
             nearest_Distance = FindProperty("_Nearest_Distance", props, false);
