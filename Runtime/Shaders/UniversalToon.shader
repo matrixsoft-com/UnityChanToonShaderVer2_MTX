@@ -186,7 +186,7 @@ Shader "Universal Render Pipeline/Toon" {
         _Farthest_Distance ("Farthest_Distance", Float ) = 100
         _Nearest_Distance ("Nearest_Distance", Float ) = 0.5
         _Outline_Sampler ("Outline_Sampler", 2D) = "white" {}
-        _Outline_Color ("Outline_Color", Color) = (0.5,0.5,0.5,1)
+        _Outline_Color ("Outline_Color", Color) = (0.25,0.25,0.25,1)
         [Toggle(_)] _Is_BlendBaseColor ("Is_BlendBaseColor", Float ) = 0
         [Toggle(_)] _Is_LightColor_Outline ("Is_LightColor_Outline", Float ) = 1
         // ClippingMask paramaters from Here.
@@ -197,6 +197,7 @@ Shader "Universal Render Pipeline/Toon" {
         _OutlineTex ("OutlineTex", 2D) = "white" {}
         //Offset parameter
         _Offset_Z ("Offset_Camera_Z", Float) = 0
+        _Outline_DistancePower ("Outline Distance Power", Range(0.5, 1.5)) = 1.2
         //v.2.0.4.3 Baked Nrmal Texture for Outline
         [Toggle(_)] _Is_BakedNormal ("Is_BakedNormal", Float ) = 0
         _BakedNormal ("Baked Normal for Outline", 2D) = "white" {}

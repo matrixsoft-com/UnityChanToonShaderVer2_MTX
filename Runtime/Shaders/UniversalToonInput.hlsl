@@ -161,6 +161,7 @@ float4 _Outline_Sampler_ST;
 float4 _Outline_Color;
 fixed _Is_BlendBaseColor;
 float _Offset_Z;
+float _Outline_DistancePower;
 
 float4 _OutlineTex_ST;
 fixed _Is_OutlineTex;

@@ -91,6 +91,7 @@
 
             struct VertexInput {
                 float4 vertex : POSITION;
+                float4 color : COLOR0;
                 float3 normal : NORMAL;
                 float4 tangent : TANGENT;
                 float2 texcoord0 : TEXCOORD0;
@@ -106,6 +107,7 @@
             };
             struct VertexOutput {
                 float4 pos : SV_POSITION;
+                float4 color : COLOR0;
                 float2 uv0 : TEXCOORD0;
 //v.2.0.4
 #ifdef _IS_ANGELRING_OFF
@@ -380,6 +382,7 @@
                 UNITY_TRANSFER_INSTANCE_ID(v, o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+                o.color = v.color;
                 o.uv0 = v.texcoord0;
 //v.2.0.4
 #ifdef _IS_ANGELRING_OFF
