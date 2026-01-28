@@ -211,6 +211,8 @@ Shader "Universal Render Pipeline/Toon" {
         _Offset_X_Axis_BLD (" Offset X-Axis (Built-in Light Direction)", Range(-1, 1)) = -0.05
         _Offset_Y_Axis_BLD (" Offset Y-Axis (Built-in Light Direction)", Range(-1, 1)) = 0.09
         [Toggle(_)] _Inverse_Z_Axis_BLD (" Inverse Z-Axis (Built-in Light Direction)", Float ) = 1
+        //Face Light Axis for YAxisFace technique
+        _FaceLightAxis ("Face Light Detection Axis", Vector) = (0, 1, 0, 0)
     }
     SubShader {
         Tags {

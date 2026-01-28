@@ -132,6 +132,7 @@ fixed _Is_BLD;
 float _Offset_X_Axis_BLD;
 float _Offset_Y_Axis_BLD;
 fixed _Inverse_Z_Axis_BLD;
+float3 _FaceLightAxis;
 
 float4 _ClippingMask_ST;
 

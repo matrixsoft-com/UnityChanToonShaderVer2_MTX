@@ -238,6 +238,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
         MaterialProperty shadingGradeMap = null;
         MaterialProperty tweak_ShadingGradeMapLevel = null;
         MaterialProperty blurLevelSGM = null;
+        MaterialProperty faceLightAxis = null;
         MaterialProperty tweak_SystemShadowsLevel = null;
         MaterialProperty baseColor_Step = null;
         MaterialProperty baseShade_Feather = null;
@@ -400,6 +401,7 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
             shadingGradeMap = FindProperty("_ShadingGradeMap", props, false);
             tweak_ShadingGradeMapLevel = FindProperty("_Tweak_ShadingGradeMapLevel", props, false);
             blurLevelSGM = FindProperty("_BlurLevelSGM", props, false);
+            faceLightAxis = FindProperty("_FaceLightAxis", props, false);
             tweak_SystemShadowsLevel = FindProperty("_Tweak_SystemShadowsLevel", props);
             baseColor_Step = FindProperty(ShaderPropBaseColor_Step, props);
             baseShade_Feather = FindProperty(ShaderPropBaseShade_Feather, props);
@@ -1415,7 +1417,12 @@ namespace UnityEditor.Rendering.Universal.Toon.ShaderGUI
                 }
                 else if (material.GetInt(ShaderPropUtsTechniqe) == (int)_UTS_Technique.YAxisFace)
                 {    //YAxisFace - ShadingGradeMapと同じ機能
-                    GUILayout.Label("Technipue : YAxisFace", EditorStyles.boldLabel);
+                    GUILayout.Label("Technique : YAxisFace", EditorStyles.boldLabel);
+                    if (faceLightAxis != null)
+                    {
+                        m_MaterialEditor.VectorProperty(faceLightAxis, "Face Light Detection Axis");
+                        EditorGUILayout.HelpBox("Object空間でキャラクターの左右方向に対応する軸ベクトルを指定します。\n例: Y軸=(0,1,0), X軸=(1,0,0), 反転=-1を使用", MessageType.Info);
+                    }
                     m_MaterialEditor.TexturePropertySingleLine(Styles.shadingGradeMapText, shadingGradeMap);
                     m_MaterialEditor.RangeProperty(tweak_ShadingGradeMapLevel, "ShadingGradeMap Level");
                     m_MaterialEditor.RangeProperty(blurLevelSGM, "Blur Level of ShadingGradeMap");
