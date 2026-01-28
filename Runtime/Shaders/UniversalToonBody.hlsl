@@ -434,6 +434,10 @@
 
 #include "UniversalToonBodyShadingGradeMap.hlsl"
 
+#elif defined(_YAXISFACE)
+
+#include "UniversalToonBodyYAxisFace.hlsl"
+
 #else //#if defined(_SHADINGGRADEMAP)
 
 #include "UniversalToonBodyDoubleShadeWithFeather.hlsl"
@@ -444,6 +448,8 @@
             {
 #if defined(_SHADINGGRADEMAP)
                     return fragShadingGradeMap(i, facing);
+#elif defined(_YAXISFACE)
+                    return fragYAxisFace(i, facing);
 #else
                     return fragDoubleShadeFeather(i, facing);
 #endif

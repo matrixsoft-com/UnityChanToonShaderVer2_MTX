@@ -211,6 +211,8 @@ Shader "Universal Render Pipeline/Toon" {
         _Offset_X_Axis_BLD (" Offset X-Axis (Built-in Light Direction)", Range(-1, 1)) = -0.05
         _Offset_Y_Axis_BLD (" Offset Y-Axis (Built-in Light Direction)", Range(-1, 1)) = 0.09
         [Toggle(_)] _Inverse_Z_Axis_BLD (" Inverse Z-Axis (Built-in Light Direction)", Float ) = 1
+        //Face Light Axis for YAxisFace technique
+        _FaceLightAxis ("Face Light Detection Axis", Vector) = (0, 1, 0, 0)
     }
     SubShader {
         Tags {
@@ -317,7 +319,7 @@ Shader "Universal Render Pipeline/Toon" {
             #pragma multi_compile   _IS_PASS_FWDBASE
             #pragma multi_compile   _ENVIRONMENTREFLECTIONS_OFF
             // DoubleShadeWithFeather and ShadingGradeMap use different fragment shader.  
-            #pragma shader_feature _ _SHADINGGRADEMAP
+            #pragma shader_feature _ _SHADINGGRADEMAP _YAXISFACE
 
 
             // used in ShadingGradeMap
